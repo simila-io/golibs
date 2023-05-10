@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 package logging
+
+import "sync/atomic"
 
 type (
 	// Logger interface exposes some methods for application logging
@@ -28,8 +30,13 @@ type (
 		Errorf(format string, args ...interface{})
 	}
 
-	NewLoggerF func(loggerName string) Logger
-	SetLevelF  func(lvl Level)
+	// Config struct allows to set the current logger settings
+	Config struct {
+		// NewLoggerF points to the function to construct new Logger
+		NewLoggerF func(loggerName string) Logger
+		// SetLevelF points to the function to set specific logger level
+		SetLevelF func(lvl Level)
+	}
 
 	// Level is one of ERROR, WARN, INFO, DEBUG, of TRACE
 	Level int
@@ -43,9 +50,26 @@ const (
 	TRACE
 )
 
-// NewLogger returns the new instance of Logger for the caller name. If you need some specific
-// implementation, implement the Logger interface and assign the variable to it.
-var NewLogger NewLoggerF = stdNewLogger
+var (
+	loggerSettings atomic.Value
+)
+
+func init() {
+	// init with the std logger
+	SetConfig(Config{NewLoggerF: stdNewLogger, SetLevelF: stdSetLevel})
+}
+
+// NewLogger returns the new instance of Logger for the caller name.
+func NewLogger(loggerName string) Logger {
+	return loggerSettings.Load().(Config).NewLoggerF(loggerName)
+}
 
 // SetLevel allows to set the logging level
-var SetLevel SetLevelF = stdSetLevel
+func SetLevel(lvl Level) {
+	loggerSettings.Load().(Config).SetLevelF(lvl)
+}
+
+// SetConfig allows to overwrite the current logger settings
+func SetConfig(cfg Config) {
+	loggerSettings.Store(cfg)
+}

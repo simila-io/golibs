@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	errors2 "github.com/acquirecloud/golibs/errors"
 )
 
 type (
@@ -91,14 +88,4 @@ func (sl *stdLogger) logf(lvl int32, format string, args ...interface{}) {
 	}
 	fmt.Fprintln(sl.writer)
 	stdMx.Unlock()
-}
-
-func parseLevel(levelStr string) int32 {
-	levelStr = strings.ToUpper(levelStr)
-	for i, lvl := range levels {
-		if lvl == levelStr {
-			return i
-		}
-	}
-	panic(fmt.Errorf("unsupported log level: %w", errors2.ErrInvalid))
 }

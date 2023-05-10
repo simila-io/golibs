@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+
+env:
+  GO_PRIVATE: "github.com/acquirecloud/*"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup go environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Setup cache
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Git configuration for private repos
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com"
+
+      - name: Setup ssh agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.DEV_ACCESS_KEY }}
+
+      - name: Run tests
+        run: go -v -cover ./...

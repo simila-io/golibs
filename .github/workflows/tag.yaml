@@ -18,4 +18,4 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.0
         with:
-          github_token: ${{ secrets.DEV_ACCESS_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

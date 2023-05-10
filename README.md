@@ -1,4 +1,4 @@
-[![CI](https://github.com/acquirecloud/golibs/actions/workflows/ci.yaml/badge.svg)[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/acquirecloud/golibs/blob/main/LICENSE)
+![CI](https://github.com/acquirecloud/golibs/actions/workflows/ci.yaml/badge.svg)[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/acquirecloud/golibs/blob/main/LICENSE)
 # golibs
 The repository contains utility code that can be used by applications written in Golang. Can be called 'common utils'.
 

@@ -32,14 +32,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Git configuration for private repos
-        run: |
-          git config --global url."git@github.com:".insteadOf "https://github.com"
-
-      - name: Setup ssh agent
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.DEV_ACCESS_KEY }}
-
       - name: Run tests
         run: go -v -cover ./...

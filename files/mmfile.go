@@ -16,6 +16,7 @@ package files
 
 import (
 	"fmt"
+	"github.com/acquirecloud/golibs/container/bytes"
 	"github.com/acquirecloud/golibs/errors"
 	"github.com/edsrzf/mmap-go"
 	"os"
@@ -34,6 +35,9 @@ type (
 		size int64
 	}
 )
+
+// The MMFile implements the bytes.Buffer to be used in the bytes.Blocks if needed
+var _ bytes.Buffer = (*MMFile)(nil)
 
 // NewMMFile creates new or open existing and maps a region with the size into map.
 // The size region must be multiplied on os.Getpagesize() (4096?). If the file size doesn't exist,

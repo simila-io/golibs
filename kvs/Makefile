@@ -14,7 +14,7 @@ protoc:
 .PHONY: generate
 generate: ## generating gRPC files
 	@echo "generating proto files"
-	@protoc --go_out=${GENPROTO_DIR} proto/v1/record.proto
+	@protoc --go_out=${GENPROTO_DIR} proto/golibskvs/v1/record.proto
 
 .PHONY: redis-start
 redis-start: ## start redis server in docker

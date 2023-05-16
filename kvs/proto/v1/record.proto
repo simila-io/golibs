@@ -2,8 +2,8 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-package kvspb.v1;
-option go_package = "kvspb/v1;kvspb";
+package golibskvspb.v1;
+option go_package = "golibskvspb/v1;golibskvspb";
 
 // Record describes a key-value pair stored in the storage
 message Record {

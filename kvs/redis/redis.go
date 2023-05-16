@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,7 @@ import (
 	"github.com/acquirecloud/golibs/container/iterable"
 	"github.com/acquirecloud/golibs/errors"
 	"github.com/acquirecloud/golibs/kvs"
-	"github.com/acquirecloud/golibs/kvs/genproto/kvspb/v1"
+	"github.com/acquirecloud/golibs/kvs/genproto/golibskvspb/v1"
 	"github.com/acquirecloud/golibs/ulidutils"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"
@@ -245,7 +245,7 @@ func rec2db(r *kvs.Record) []byte {
 }
 
 func db2rec(buf []byte) kvs.Record {
-	var r kvspb.Record
+	var r golibskvspb.Record
 	err := proto.Unmarshal(buf, &r)
 	if err != nil {
 		panic(fmt.Sprintf("could not unmarshal record: %s", err))
@@ -277,8 +277,8 @@ func (k *keysIterator) Close() error {
 	return nil
 }
 
-func Record2protoRecord(r *kvs.Record) *kvspb.Record {
-	res := &kvspb.Record{
+func Record2protoRecord(r *kvs.Record) *golibskvspb.Record {
+	res := &golibskvspb.Record{
 		Key:     r.Key,
 		Value:   r.Value,
 		Version: r.Version,
@@ -289,7 +289,7 @@ func Record2protoRecord(r *kvs.Record) *kvspb.Record {
 	return res
 }
 
-func ProtoRecord2Record(r *kvspb.Record) kvs.Record {
+func ProtoRecord2Record(r *golibskvspb.Record) kvs.Record {
 	if r == nil {
 		return kvs.Record{}
 	}

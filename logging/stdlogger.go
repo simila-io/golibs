@@ -49,6 +49,10 @@ func stdSetLevel(lvl Level) {
 	atomic.SwapInt32(&stdLevel, int32(lvl))
 }
 
+func stdGetLevel() Level {
+	return Level(atomic.LoadInt32(&stdLevel))
+}
+
 // Warnf is a function for printing Warn-level messages from the source code
 func (sl *stdLogger) Warnf(format string, args ...interface{}) {
 	sl.logf(WARN, format, args...)

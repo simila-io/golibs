@@ -36,6 +36,8 @@ type (
 		NewLoggerF func(loggerName string) Logger
 		// SetLevelF points to the function to set specific logger level
 		SetLevelF func(lvl Level)
+		// GetLevelF returns the current log level
+		GetLevelF func() Level
 	}
 
 	// Level is one of ERROR, WARN, INFO, DEBUG, of TRACE
@@ -56,7 +58,7 @@ var (
 
 func init() {
 	// init with the std logger
-	SetConfig(Config{NewLoggerF: stdNewLogger, SetLevelF: stdSetLevel})
+	SetConfig(Config{NewLoggerF: stdNewLogger, SetLevelF: stdSetLevel, GetLevelF: stdGetLevel})
 }
 
 // NewLogger returns the new instance of Logger for the caller name.
@@ -67,6 +69,11 @@ func NewLogger(loggerName string) Logger {
 // SetLevel allows to set the logging level
 func SetLevel(lvl Level) {
 	loggerSettings.Load().(Config).SetLevelF(lvl)
+}
+
+// GetLevel returns the current log level
+func GetLevel() Level {
+	return loggerSettings.Load().(Config).GetLevelF()
 }
 
 // SetConfig allows to overwrite the current logger settings

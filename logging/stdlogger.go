@@ -32,8 +32,8 @@ type (
 
 var (
 	stdMx    sync.Mutex
-	stdLevel int32 = INFO
-	levels         = map[int32]string{ERROR: "ERROR", DEBUG: "DEBUG", INFO: "INFO", WARN: "WARN", TRACE: "TRACE"}
+	stdLevel int32 = int32(INFO)
+	levels         = map[Level]string{ERROR: "ERROR", DEBUG: "DEBUG", INFO: "INFO", WARN: "WARN", TRACE: "TRACE"}
 )
 
 // stdNewLogger returns a Logger interface by its name
@@ -78,9 +78,9 @@ func (sl *stdLogger) Errorf(format string, args ...interface{}) {
 	sl.logf(ERROR, format, args...)
 }
 
-func (sl *stdLogger) logf(lvl int32, format string, args ...interface{}) {
+func (sl *stdLogger) logf(lvl Level, format string, args ...interface{}) {
 	stdMx.Lock()
-	if atomic.LoadInt32(&stdLevel) < lvl {
+	if atomic.LoadInt32(&stdLevel) < int32(lvl) {
 		stdMx.Unlock()
 		return
 	}

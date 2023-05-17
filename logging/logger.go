@@ -41,11 +41,11 @@ type (
 	}
 
 	// Level is one of ERROR, WARN, INFO, DEBUG, of TRACE
-	Level int
+	Level int32
 )
 
 const (
-	ERROR = iota
+	ERROR Level = iota
 	WARN
 	INFO
 	DEBUG

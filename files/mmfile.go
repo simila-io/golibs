@@ -39,8 +39,10 @@ type (
 // The MMFile implements the bytes.Buffer to be used in the bytes.Blocks if needed
 var _ bytes.Buffer = (*MMFile)(nil)
 
+const BlockSize = 4096
+
 // NewMMFile creates new or open existing and maps a region with the size into map.
-// The size region must be multiplied on os.Getpagesize() (4096?). If the file size doesn't exist,
+// The size region must be multiplied on BlockSize. If the file size doesn't exist,
 // or its initial size is less than the mapped size provided the file physical size will be extended to
 // the size. If the size is less than 0, than the mapping will try to be done to the actual file size.
 func NewMMFile(fname string, size int64) (*MMFile, error) {
@@ -165,8 +167,8 @@ func checkSize(size int64) error {
 		return fmt.Errorf("provided size must be positive, and the file should not be empty, but size=%d: %w", size, errors.ErrInvalid)
 	}
 
-	if size%int64(os.Getpagesize()) != 0 {
-		return fmt.Errorf("size=%d must be a multiple of %d: %w", size, os.Getpagesize(), errors.ErrInvalid)
+	if size%int64(BlockSize) != 0 {
+		return fmt.Errorf("size=%d must be a multiple of %d: %w", size, BlockSize, errors.ErrInvalid)
 	}
 	return nil
 }

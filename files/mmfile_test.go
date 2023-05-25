@@ -30,7 +30,7 @@ func TestOpenCloseMMFile(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(dir) // clean up
 
-	fsz := int64(25000 * 4096)
+	fsz := int64(23451 * 4096)
 	fn := path.Join(dir, "testFile")
 	mmf, err := NewMMFile(fn, fsz)
 	assert.Nil(t, err)

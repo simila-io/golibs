@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -113,9 +113,10 @@ func (im *Map[K, V]) Len() int {
 	return len(im.vals)
 }
 
-// First returns first key and the whether the key exist or not
+// First returns the first key and the whether the key exist or not
 func (im *Map[K, V]) First() (K, bool) {
 	it := im.Iterator()
+	defer it.Close()
 	e, res := it.Next()
 	return e.Key, res
 }

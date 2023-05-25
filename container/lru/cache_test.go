@@ -14,15 +14,18 @@
 package lru
 
 import (
-	"github.com/stretchr/testify/assert"
+	"math/rand"
 	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func BenchmarkCache_GetOrCreate(b *testing.B) {
-	p, _ := NewCache[string, string](1, func(k string) (string, error) {
+func BenchmarkCache_GetOrCreate_NoMisses(b *testing.B) {
+	p, _ := NewCache(1, func(k string) (string, error) {
 		return "bb", nil
 	}, nil)
 
@@ -31,6 +34,21 @@ func BenchmarkCache_GetOrCreate(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		p.GetOrCreate("aa")
+	}
+}
+
+func BenchmarkCache_GetOrCreate_Misses(b *testing.B) {
+	p, _ := NewCache(1000, func(k int) (string, error) {
+		return "bb", nil
+	}, nil)
+
+	// We have 1000 elements in cache, but only 1/3 of requests should hit the cache
+	rnd := rand.New(rand.NewSource(time.Now().UnixMicro()))
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		p.GetOrCreate(rnd.Intn(3000))
 	}
 }
 

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,10 +28,12 @@ type (
 	}
 
 	callControl struct {
-		lock     sync.Mutex
-		wakeCh   chan bool
-		futures  *futures
-		watchers int
+		lock        sync.Mutex
+		wakeCh      chan bool
+		futures     *futures
+		watchers    int
+		idleTimeout time.Duration
+		maxWorkers  int
 	}
 
 	future struct {
@@ -48,7 +50,9 @@ type (
 func init() {
 	cc = new(callControl)
 	cc.futures = &futures{}
-	cc.wakeCh = make(chan bool, 100)
+	cc.maxWorkers = 10
+	cc.wakeCh = make(chan bool, cc.maxWorkers)
+	cc.idleTimeout = time.Second * 30
 	heap.Init(cc.futures)
 }
 
@@ -88,7 +92,7 @@ func (cc *callControl) add(fu *future) {
 	heap.Push(cc.futures, fu)
 	if cc.watchers == 0 {
 		cc.watchers++
-		go cc.watcher(nil)
+		go cc.watcher()
 	} else {
 		cc.notifyWatcher()
 	}
@@ -130,45 +134,58 @@ func (cc *callControl) notifyWatcher() {
 	}
 }
 
-func (cc *callControl) watcher(f func()) {
-	misCount := false
+func (cc *callControl) watcher() {
+	misCount := 0
+	var f func()
 	for {
 		if f != nil {
 			f()
+			f = nil
+			misCount = 0
+		} else {
+			misCount++
 		}
-		f = nil
 
 		var tmt time.Duration
 		cc.lock.Lock()
 		if cc.futures.Len() == 0 {
-			if cc.watchers > 1 || misCount {
+			if misCount > 1 {
 				cc.watchers--
 				cc.lock.Unlock()
 				return
 			}
-			misCount = true
-			tmt = time.Second * 30
+			// if the worker did the job, let's sleep for the idle timeout and if no new jobs, let it go also
+			tmt = cc.idleTimeout
 		} else {
-			misCount = false
 			fireT := (*cc.futures)[0].fireT
 			now := time.Now()
 			if now.After(fireT) {
 				fu := heap.Pop(cc.futures).(*future)
 				f = fu.f
-				if cc.watchers < 10 {
-					cc.watchers++
-					go cc.watcher(f)
-					f = nil
+				if cc.futures.Len() > 0 {
+					fireT = (*cc.futures)[0].fireT
+					if now.After(fireT) && cc.watchers < cc.maxWorkers {
+						// spawn new worker if there is a job to do
+						cc.watchers++
+						go cc.watcher()
+					}
 				}
 				cc.lock.Unlock()
 				continue
 			}
-			if cc.watchers > 1 {
-				cc.watchers--
-				cc.lock.Unlock()
-				return
-			}
+
 			tmt = fireT.Sub(now)
+			if cc.watchers > 1 {
+				// if the worker already slept once with no job, let it go
+				if misCount > 1 {
+					cc.watchers--
+					cc.lock.Unlock()
+					return
+				}
+				if tmt > cc.idleTimeout {
+					tmt = cc.idleTimeout
+				}
+			}
 		}
 		cc.lock.Unlock()
 
@@ -179,7 +196,7 @@ func (cc *callControl) watcher(f func()) {
 			if !tmr.Stop() {
 				<-tmr.C
 			}
-			misCount = false
+			misCount = 0
 		}
 	}
 }

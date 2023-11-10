@@ -37,6 +37,7 @@ type (
 	}
 
 	future struct {
+		cc    *callControl
 		f     func()
 		fireT time.Time
 		idx   int
@@ -48,12 +49,7 @@ type (
 )
 
 func init() {
-	cc = new(callControl)
-	cc.futures = &futures{}
-	cc.maxWorkers = 10
-	cc.wakeCh = make(chan bool, cc.maxWorkers)
-	cc.idleTimeout = time.Second * 30
-	heap.Init(cc.futures)
+	cc = newCallControl()
 }
 
 var cc *callControl
@@ -61,14 +57,29 @@ var cc *callControl
 // VoidFuture maybe used to initialize a Future variable, without checking whether it is nil or not
 var VoidFuture Future = dummyFuture{}
 
+func newCallControl() *callControl {
+	cc := new(callControl)
+	cc.futures = &futures{}
+	cc.maxWorkers = 10
+	cc.wakeCh = make(chan bool, cc.maxWorkers)
+	cc.idleTimeout = time.Second * 30
+	heap.Init(cc.futures)
+	return cc
+}
+
 // Call allows scheduling future execution of the function f in timeout provided.
 // The function returns the Future object, which may be used for cancelling the execution
 // request if needed.
 func Call(f func(), timeout time.Duration) Future {
+	return call(cc, f, timeout)
+}
+
+func call(cc *callControl, f func(), timeout time.Duration) Future {
 	fu := new(future)
 	fu.f = f
 	fu.fireT = time.Now().Add(timeout)
 	fu.idx = -1
+	fu.cc = cc
 	if f != nil {
 		cc.add(fu)
 	}
@@ -77,18 +88,17 @@ func Call(f func(), timeout time.Duration) Future {
 
 // Cancel cancels the future execution if not called yet
 func (fu *future) Cancel() {
-	cc.cancel(fu)
+	fu.cc.cancel(fu)
 }
 
 // String implements fmt.Stringify
 func (fu *future) String() string {
-	return cc.futureAsString(fu)
+	return fu.cc.futureAsString(fu)
 }
 
 func (cc *callControl) add(fu *future) {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
-
 	heap.Push(cc.futures, fu)
 	if cc.watchers == 0 {
 		cc.watchers++
@@ -100,17 +110,12 @@ func (cc *callControl) add(fu *future) {
 
 func (cc *callControl) futureAsString(fu *future) string {
 	cc.lock.Lock()
+	defer cc.lock.Unlock()
 	f := "<not assigned>"
 	if fu.f != nil {
 		f = "<assigned>"
 	}
-	charged := true
-	if fu.idx < 0 {
-		charged = false
-	}
-	res := fmt.Sprintf("{?f: %s, fireT: %v, chanrged: %t}", f, fu.fireT, charged)
-	cc.lock.Unlock()
-	return res
+	return fmt.Sprintf("{?f: %s, fireT: %v, changed: %t}", f, fu.fireT, fu.idx >= 0)
 }
 
 func (cc *callControl) cancel(fu *future) {

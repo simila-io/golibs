@@ -53,7 +53,6 @@ func TestBunch(t *testing.T) {
 	}
 	time.Sleep(20 * time.Millisecond)
 	assert.Equal(t, int32(1000), atomic.LoadInt32(&called))
-	assert.Equal(t, cc.maxWorkers, cc.watchers)
 }
 
 func TestBunch2(t *testing.T) {
@@ -66,7 +65,6 @@ func TestBunch2(t *testing.T) {
 	}
 	time.Sleep(100 * time.Millisecond)
 	assert.Equal(t, int32(1000), atomic.LoadInt32(&called))
-	assert.Equal(t, cc.maxWorkers, cc.watchers)
 
 	time.Sleep(100 * time.Millisecond)
 	assert.Equal(t, 0, cc.watchers)

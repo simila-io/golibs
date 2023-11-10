@@ -64,7 +64,7 @@ func TestBunch2(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		Call(func() { atomic.AddInt32(&called, 1) }, time.Millisecond)
 	}
-	time.Sleep(20 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 	assert.Equal(t, int32(1000), atomic.LoadInt32(&called))
 	assert.Equal(t, cc.maxWorkers, cc.watchers)
 

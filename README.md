@@ -8,7 +8,7 @@ In many services, we use the same things to instrument and support them, e.g., l
 ## Rules
 - the folders in the root have names of the class of objects or the functionality it works with: `contexts`, `sync`, `logging` etc.
 - all commits should be reviewed.
-- changes in the utilities should be incremental and backward compatible. Use a new name/package path if you add functionality incompatible with the existing one.
+- changes in the utilities should be incremental and backward compatible. Use a new name/package path if you add functionality incompatible with the existing one. 
 
 ## License
 This project is licensed under the Apache Version 2.0 License - see the [LICENSE](LICENSE) file for details
